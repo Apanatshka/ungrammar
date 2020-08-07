@@ -1,0 +1,25 @@
+module Rust
+
+imports
+  
+  ungrammar
+
+context-free start-symbols
+  
+  Start
+
+context-free sorts
+
+  Start
+
+context-free syntax
+
+  Start = SourceFile
+
+  LAYOUT = [\ \t\n\r]
+
+context-free restrictions
+
+  // Ensure greedy matching
+
+  LAYOUT? -/- [\ \t\n\r]

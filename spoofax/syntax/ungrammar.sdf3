@@ -1,0 +1,1300 @@
+module ungrammar
+
+// Rust Un-Grammar "mechanically" translated to SDF3.
+//
+// This grammar specifies the structure of Rust's concrete syntax tree.
+// It does not specify parsing rules (ambiguities, precedence, etc are out of scope).
+// Tokens are processed -- contextual keywords are recognised, compound operators glued.
+//
+// Legend:
+//
+//   //          -- comment
+//   Name.Cons = -- non-terminal definition with AST constructor name
+//   "ident"     -- terminal
+//   A B         -- sequence
+//   A*          -- zero or more repetition
+//   A+          -- one or more repetition
+//   {A ","}*    -- zero or more repetition with separator
+//   label:A     -- suggested label for field
+//
+// Sadly SDF3 dropped support for `A?` as zero or one repetition, because for ASTs in Spoofax and
+// SDF3 disambiguation rules it is often better to just have two different rules. Of course if a
+// rule has lots of these it still makes sense to write your own expansion of `A?` as
+// `AOption.None =` and `AOption.Some = A`. But to stay in keeping with the style used in the
+// ungrammar I've done this consistently throughout the grammar even when "flattening" the options
+// would have made more sense. 
+
+//*************************//
+// Names, Paths and Macros //
+//*************************//
+
+context-free sorts
+  Name NameRef Path PathSegment GenericArgList GenericArg TypeArg AssocTypeArg
+  LifetimeArg ConstArg MacroCall TokenTree MacroItems MacroStmts
+  
+  PathQualifierOption PathQualifier ColonOption GenericArgListOption RetTypeOption
+  PathSegmentAsOption PathSegmentAs GenArgList SemiOption NameOption ExprOption
+
+context-free syntax
+
+Name.Name =
+  "ident"
+
+NameRef.Ident =
+  "ident"
+
+NameRef.Int =
+  "int_number"
+
+Path.Path =
+  qualifier:PathQualifierOption segment:PathSegment
+
+PathQualifierOption.None =
+PathQualifierOption.Some = PathQualifier
+
+PathQualifier.PathQualifier = Path "::"
+
+PathSegment.Crate =
+  "crate"
+
+PathSegment.Self =
+  "self"
+
+PathSegment.Super =
+  "super"
+
+PathSegment.PathSeg =
+  ColonOption NameRef
+
+ColonOption.None =
+ColonOption.Some = "::"
+
+PathSegment.GenericSeg =
+  NameRef GenericArgListOption
+
+GenericArgListOption.None =
+GenericArgListOption.Some = GenericArgList
+
+PathSegment.ParamListSeg =
+  NameRef ParamList RetTypeOption
+
+RetTypeOption.None =
+RetTypeOption.Some = RetType
+
+PathSegment.Renaming =
+  "<" PathType PathSegmentAsOption ">"
+
+PathSegmentAs.PathSegmentAs = "as" PathType
+
+PathSegmentAsOption.None =
+PathSegmentAsOption.Some = PathSegmentAs
+
+GenericArgList.GenericArgList =
+  ColonOption "<" GenArgList ">"
+
+GenArgList.Trailing = {GenericArg ","}+ ","
+GenArgList.NoTrailing = {GenericArg ","}*
+
+GenericArg =
+  TypeArg
+
+GenericArg =
+  AssocTypeArg
+
+GenericArg =
+  LifetimeArg
+
+GenericArg =
+  ConstArg
+
+TypeArg =
+  Type
+
+AssocTypeArg.AssocTypeArg =
+  NameRef AssocTypeArgRhs
+
+AssocTypeArgRhs.TypeBound =
+  ":" TypeBoundList
+
+AssocTypeArgRhs.EqBound =
+  "=" Type
+
+LifetimeArg.Lifetime =
+  "lifetime"
+
+ConstArg =
+  Expr
+
+MacroCall.MacroCall =
+  Attr* Path "!" NameOption TokenTree SemiOption
+
+SemiOption.None =
+SemiOption.Some = ";"
+
+NameOption.None =
+NameOption.Some = Name
+
+TokenTree.TokenTreeRound =
+  "(" ")"
+
+TokenTree.TokenTreeCurly =
+  "{" "}"
+
+TokenTree.TokenTreeSquare =
+  "[" "]"
+
+MacroItems.MacroItems =
+  Item*
+
+MacroStmts.MacroStmts =
+  statements:Stmt*
+  ExprOption
+
+ExprOption.None =
+ExprOption.Some = ExprOption
+
+//*************************//
+//          Items          //
+//*************************//
+
+context-free sorts
+  SourceFile Item Module ItemList ExternCrate Rename Use UseTree UseTreeList Fn
+  Abi ParamList SelfParam Param RetType TypeAlias Struct RecordFieldList
+  RecordField TupleFieldList TupleField FieldList Enum VariantList Variant Union
+  AdtDef Const Static Trait AssocItemList AssocItem Impl ExternBlock ExternItemList
+  ExternItem GenericParamList GenericParam TypeParam ConstParam LifetimeParam
+  WhereClause WherePred Visibility Attr
+  
+  ShebangOption VisibilityOption ItemListOrSemi NameRefOrSelf RenameOption NameOrWld
+  UseTreeQualifierOption UseTreeQualifier PathOption StarOrUseTreeList UTList DefaultOption
+  AsyncOrConstOption AsyncOrConst UnsafeOption AbiOption WhereClauseOption GenericParamListOption
+  BlockExprOrSemi StringOption ParamListInner SelfParamComma SelfParamCommaOption
+  ParamListInnerParamList SelfParamInner SelfParamRefOption SelfParamRef LifetimeOption MutOption
+  ParamInner ParamPatTypeOption ParamPatType ColonTypeBoundListOption ColonTypeBoundList
+  TypeBoundListOption StructInner RecordFieldListOrSemi RecFieldList TupFieldList
+  VarList EqExpr EqExprOption StaticOption AutoOption ConstOption BangOption ImplFor ImplForOption
+  GenParamList EqType EqTypeOption WherePredList WherePredFor WherePredForOption LifetimeOrType
+  VisibilityMod VisibilityModOption VisibilityModInner AttrInner AttrInnerOption
+
+context-free syntax
+
+SourceFile.SourceFile =
+  ShebangOption
+  Attr*
+  Item*
+
+ShebangOption.None =
+ShebangOption.Some = "shebang"
+
+Item =
+  Const
+
+Item =
+  Enum
+
+Item =
+  ExternBlock
+
+Item =
+  ExternCrate
+
+Item =
+  Fn
+
+Item =
+  Impl
+
+Item =
+  MacroCall
+
+Item =
+  Module
+
+Item =
+  Static
+
+Item =
+  Struct
+
+Item =
+  Trait
+
+Item =
+  TypeAlias
+
+Item =
+  Union
+
+Item =
+  Use
+
+Module.Module =
+  Attr* VisibilityOption
+  "mod" Name
+  ItemListOrSemi
+
+VisibilityOption.Some = Visibility
+VisibilityOption.None =
+
+ItemListOrSemi = ItemList
+ItemListOrSemi.Semi = ";"
+
+ItemList.ItemList =
+  "{" Attr* Item* "}"
+
+ExternCrate.ExternCrate =
+  Attr* VisibilityOption
+  "extern" "crate" NameRefOrSelf RenameOption ";"
+
+NameRefOrSelf = NameRef
+NameRefOrSelf.Self = "self"
+
+RenameOption.None =
+RenameOption.Some = Rename
+
+Rename.Rename =
+  "as" NameOrWld
+
+NameOrWld = Name
+NameOrWld.Wld = "_"
+
+Use.Use =
+  Attr* VisibilityOption
+  "use" UseTree ";"
+
+UseTree.UseTree =
+  UseTreeQualifierOption StarOrUseTreeList
+
+UseTreeQualifierOption.None =
+UseTreeQualifierOption.Some = UseTreeQualifier
+
+UseTreeQualifier.UseTreeQualifier = PathOption "::"
+
+PathOption.None =
+PathOption.Some = Path
+
+StarOrUseTreeList.Star = "*"
+StarOrUseTreeList = UseTreeList
+
+UseTree.UseTreeRename =
+  Path RenameOption
+
+UseTreeList.UseTreeList =
+  "{" UTList "}"
+
+UTList.Trailing = {UseTree ","}+ ","
+UTList.NoTrailing = {UseTree ","}*
+
+Fn.Fn =
+ Attr* VisibilityOption
+ DefaultOption AsyncOrConstOption "unsafe" Abi
+ "fn" Name GenericParamListOption ParamList RetTypeOption WhereClauseOption
+ BlockExprOrSemi
+
+DefaultOption.None =
+DefaultOption.Some = "default"
+
+AsyncOrConstOption.None =
+AsyncOrConstOption.Some = AsyncOrConst
+
+AsyncOrConst.Async = "async"
+AsyncOrConst.Const = "const"
+
+UnsafeOption.None =
+UnsafeOption.Some = "unsafe"
+
+AbiOption.None =
+AbiOption.Some = Abi
+
+WhereClauseOption.None =
+WhereClauseOption.Some = WhereClause
+
+GenericParamListOption.None =
+GenericParamListOption.Some = GenericParamList
+
+BlockExprOrSemi = BlockExpr
+BlockExprOrSemi.Semi = ";"
+
+Abi.Abi =
+  "extern" StringOption
+
+StringOption.Some = "string"
+StringOption.None =
+
+ParamList.ParamList =
+  "(" ParamListInner ")"
+
+ParamListInner.Self = SelfParam
+ParamListInner.Multiple = SelfParamCommaOption ParamListInnerParamList
+
+SelfParamComma.SelfParamComma = SelfParam ","
+
+SelfParamCommaOption.None =
+SelfParamCommaOption.Some = SelfParamComma
+
+ParamListInnerParamList.Trailing = {Param ","}+ ","
+ParamListInnerParamList.NoTrailing = {Param ","}*
+
+SelfParam.SelfParam =
+  Attr* SelfParamInner
+
+SelfParamInner.SelfParamRef = SelfParamRefOption MutOption "self"
+SelfParamInner.SelfParamTyped = MutOption "self" ":" Type
+
+SelfParamRefOption.None =
+SelfParamRefOption.Some = SelfParamRef
+
+SelfParamRef.SelfParamRef = "&" LifetimeOption
+
+LifetimeOption.Some = "lifetime"
+LifetimeOption.None =
+
+MutOption.None =
+MutOption.Some = "mut"
+
+Param.Param =
+  Attr* ParamInner
+
+ParamInner.ParamPat = Pat ParamPatTypeOption
+ParamInner = Type
+ParamInner.Rest = "..."
+
+ParamPatTypeOption.None =
+ParamPatTypeOption.Some = ParamPatType
+
+ParamPatType.ParamPatType = ":" Type
+
+RetType.RetType =
+  "->" Type
+
+TypeAlias.TypeAlias =
+  Attr* VisibilityOption
+  DefaultOption
+  "type" Name GenericParamListOption ColonTypeBoundListOption WhereClauseOption
+  "=" Type ";"
+
+ColonTypeBoundListOption.None =
+ColonTypeBoundListOption.Some = ColonTypeBoundList
+
+ColonTypeBoundList.ColonTypeBoundList = ":" TypeBoundListOption
+
+TypeBoundListOption.None =
+TypeBoundListOption.Some = TypeBoundList
+
+Struct.Struct =
+  Attr* VisibilityOption
+  "struct" Name GenericParamListOption
+  StructInner
+
+StructInner.RecordStruct = WhereClauseOption RecordFieldListOrSemi
+StructInner.TupleStruct = TupleFieldList WhereClauseOption ";"
+
+RecordFieldListOrSemi = RecordFieldList
+RecordFieldListOrSemi.Semi = ";"
+
+RecordFieldList.RecordFieldList =
+ "{" fields:RecFieldList "}"
+
+RecFieldList.Trailing = {RecordField ","}+ ","
+RecFieldList.NoTrailing = {RecordField ","}*
+
+RecordField.RecordField =
+  Attr* VisibilityOption
+  Name ":" Type
+
+TupleFieldList.TupleFieldList =
+  "(" fields:TupFieldList ")"
+
+TupFieldList.Trailing = {TupleField ","}+ ","
+TupFieldList.NoTrailing = {TupleField ","}*
+
+TupleField.TupleField =
+  Attr* VisibilityOption
+  Type
+
+FieldList =
+  RecordFieldList
+
+FieldList =
+  TupleFieldList
+
+Enum.Enum =
+  Attr* VisibilityOption
+  "enum" Name GenericParamListOption WhereClauseOption
+  VariantList
+
+VariantList.VariantList =
+ "{" VarList "}"
+
+VarList.Trailing = {Variant ","}+ ","
+VarList.NoTrailing = {Variant ","}*
+
+Variant.Variant =
+  Attr* VisibilityOption
+  Name FieldList EqExprOption
+
+EqExpr.EqExpr = "=" Expr
+
+EqExprOption.Some = EqExpr
+EqExprOption.None =
+
+Union.Union =
+  Attr* VisibilityOption
+  "union" Name GenericParamListOption WhereClauseOption
+  RecordFieldList
+
+AdtDef =
+  Enum
+
+AdtDef =
+  Struct
+
+AdtDef =
+  Union
+
+Const.Const =
+  Attr* VisibilityOption
+  DefaultOption
+  "const" NameOrWld ":" Type
+  "=" body:Expr ";"
+
+Static.Static =
+  Attr* VisibilityOption
+  StaticOption MutOption Name ":" Type
+  "=" body:Expr ";"
+
+StaticOption.Some = "static"
+StaticOption.None =
+
+Trait.Trait =
+  Attr* VisibilityOption
+  UnsafeOption AutoOption
+  "trait" Name GenericParamList ColonTypeBoundListOption WhereClause
+  AssocItemList
+
+AutoOption.Some = "auto"
+AutoOption.None =
+
+AssocItemList.AssocItemList =
+  "{" Attr* AssocItem* "}"
+
+AssocItem =
+  Const
+
+AssocItem =
+  Fn
+
+AssocItem =
+  MacroCall
+
+AssocItem =
+  TypeAlias
+
+Impl.Impl =
+  Attr* VisibilityOption
+  DefaultOption UnsafeOption
+  "impl" ConstOption GenericParamListOption ImplForOption self_ty:Type WhereClauseOption
+  AssocItemList
+
+ConstOption.None =
+ConstOption.Some = "const"
+
+BangOption.None =
+BangOption.Some = "!"
+
+ImplFor.ImplFor = BangOption trait:Type "for"
+
+ImplForOption.None =
+ImplForOption.Some = ImplFor
+
+ExternBlock.ExternBlock =
+  Attr* Abi ExternItemList
+
+ExternItemList.ExternItemList =
+  "{" Attr* ExternItem* "}"
+
+ExternItem =
+  Fn
+
+ExternItem =
+  MacroCall
+
+ExternItem =
+  Static
+
+GenericParamList.GenericParamList =
+  "<" GenParamList ">"
+
+GenParamList.Trailing = {GenericParam ","}+ ","
+GenParamList.NoTrailing = {GenericParam ","}*
+
+GenericParam =
+  ConstParam
+
+GenericParam =
+  LifetimeParam
+
+GenericParam =
+  TypeParam
+
+TypeParam.TypeParam =
+  Attr* Name ColonTypeBoundListOption
+  EqTypeOption
+
+EqType.EqType = "=" default_type:Type
+
+EqTypeOption.None =
+EqTypeOption.Some = EqType
+
+ConstParam.ConstParam =
+  Attr* "const" Name ":" Type
+  EqExprOption
+
+LifetimeParam.LifetimeParam =
+  Attr* "lifetime" ColonTypeBoundListOption
+
+WhereClause.WhereClause =
+  "where" predicates:WherePredList
+
+WherePredList.Trailing = {WherePred ","}+ ","
+WherePredList.NoTrailing = {WherePred ","}+
+
+WherePred.WherePred =
+  WherePredForOption LifetimeOrType ":" TypeBoundList
+
+WherePredFor.WherePredFor = "for" GenericParamList
+
+WherePredForOption.None =
+WherePredForOption.Some = WherePredFor
+
+LifetimeOrType.Lifetime = "lifetime"
+LifetimeOrType = Type
+
+Visibility.Visibility =
+  "pub" VisibilityModOption
+
+VisibilityMod.VisibilityMod = "(" VisibilityModInner ")"
+
+VisibilityModOption.None =
+VisibilityModOption.Some = VisibilityMod
+
+VisibilityModInner.Super =
+  "super"
+
+VisibilityModInner.Self =
+  "self"
+
+VisibilityModInner.Crate =
+  "crate"
+
+VisibilityModInner.InPath =
+  "in" Path
+
+Attr.Attr =
+  "#" BangOption "[" Path AttrInnerOption "]"
+
+AttrInner.IsLiteral = "=" Literal
+AttrInner = TokenTree
+
+AttrInnerOption.None =
+AttrInnerOption.Some = AttrInner
+
+//****************************//
+// Statements and Expressions //
+//****************************//
+
+context-free sorts
+  Stmt LetStmt ExprStmt Expr Literal PathExpr BlockExpr RefExpr TryExpr EffectExpr
+  PrefixExpr BinExpr CastExpr ParenExpr ArrayExpr IndexExpr TupleExpr RecordExpr
+  RecordExprFieldList RecordExprField CallExpr ArgList MethodCallLExpr FieldExpr
+  ClosureExpr IfExpr Condition LoopExpr ForExpr WhileExpr Label BreakExpr ContinueExpr
+  RangeExpr MatchExpr MatchArmList MatchArm MatchGuard ReturnExpr AwaitExpr BoxExpr
+  
+  ColonType ColonTypeOption Value RefExprMod EffectExprMod PrefixOp BinOp ArrayExprInner ExprList
+  RecExprFieldList Spread SpreadOption ColonExpr ColonExprOption AsyncOption MoveOption ElseBranch
+  ElseBranchInner ElseBranchOption LabelOption RangeOp MatchGuardOption CommaOption 
+
+context-free syntax
+
+Stmt.Semi =
+  ";"
+
+Stmt =
+  ExprStmt
+
+Stmt =
+  Item
+
+Stmt =
+  LetStmt
+
+LetStmt.LetStmt =
+  Attr* "let" Pat ColonTypeOption
+  "=" initializer:Expr ";"
+
+ColonType.ColonType = ":" Type
+
+ColonTypeOption.None =
+ColonTypeOption.Some = ColonType
+
+ExprStmt.ExprStmt =
+  Attr* Expr SemiOption
+
+Expr =
+  ArrayExpr
+
+Expr =
+  AwaitExpr
+
+Expr =
+  BinExpr
+
+Expr =
+  BlockExpr
+
+Expr =
+  BoxExpr
+
+Expr =
+  BreakExpr
+
+Expr =
+  CallExpr
+
+Expr =
+  CastExpr
+
+Expr =
+  ClosureExpr
+
+Expr =
+  ContinueExpr
+
+Expr =
+  EffectExpr
+
+Expr =
+  FieldExpr
+
+Expr =
+  ForExpr
+
+Expr =
+  IfExpr
+
+Expr =
+  IndexExpr
+
+Expr =
+  Literal
+
+Expr =
+  LoopExpr
+
+Expr =
+  MacroCall
+
+Expr =
+  MatchExpr
+
+Expr =
+  MethodCallExpr
+
+Expr =
+  ParenExpr
+
+Expr =
+  PathExpr
+
+Expr =
+  PrefixExpr
+
+Expr =
+  RangeExpr
+
+Expr =
+  RecordExpr
+
+Expr =
+  RefExpr
+
+Expr =
+  ReturnExpr
+
+Expr =
+  TryExpr
+
+Expr =
+  TupleExpr
+
+Expr =
+  WhileExpr
+
+Literal.Literal =
+  Attr* value:Value
+
+Value.Int =
+  "int_number"
+
+Value.Float =
+  "float_number"
+
+Value.String =
+  "string"
+
+Value.RawString =
+  "raw_string"
+
+Value.ByteString =
+  "byte_string"
+
+Value.RawByteString =
+  "raw_byte_string"
+
+Value.True =
+  "true"
+
+Value.False =
+  "false"
+
+Value.Char =
+  "char"
+
+Value.Byte =
+  "byte"
+
+PathExpr.PathExpr =
+  Attr* Path
+
+BlockExpr.BlockExpr =
+  "{"
+    Attr*
+    statements:Stmt*
+    ExprOption
+  "}"
+
+RefExpr.RefExpr =
+  Attr* "&" RefExprMod Expr
+
+RefExprMod.Raw =
+  "raw"
+
+RefExprMod.Mut =
+  "mut"
+
+RefExprMod.Const =
+  "const"
+
+TryExpr.TryExpr =
+  Attr* Expr "?"
+
+EffectExpr.EffectExpr =
+  Attr* LabelOption EffectExprMod BlockExpr
+
+EffectExprMod.Try =
+  "try"
+
+EffectExprMod.Unsafe =
+  "unsafe"
+
+EffectExprMod.Async =
+  "async"
+
+PrefixExpr.PrefixExpr =
+  Attr* op:PrefixOp Expr
+
+PrefixOp.Neg =
+  "-"
+
+PrefixOp.Not =
+  "!"
+
+PrefixOp.Deref =
+  "*"
+
+BinExpr.BinExpr =
+  Attr*
+  lhs:Expr
+  op:BinOp
+  rhs:Expr
+
+BinOp.Or =
+  "||"
+
+BinOp.And =
+  "&&"
+
+BinOp.Eq =
+  "=="
+
+BinOp.Neq =
+  "!="
+
+BinOp.Le =
+  "<="
+
+BinOp.Ge =
+  ">="
+
+BinOp.Lt =
+  "<"
+
+BinOp.Gt =
+  ">"
+
+BinOp.Add =
+  "+"
+
+BinOp.Mul =
+  "*"
+
+BinOp.Min =
+  "-"
+
+BinOp.Div =
+  "/"
+
+BinOp.Mod =
+  "%"
+
+BinOp.Shl =
+  "<<"
+
+BinOp.Shr =
+  ">>"
+
+BinOp.Xor =
+  "^"
+
+BinOp.Bor =
+  "|"
+
+BinOp.Band =
+  "&"
+
+BinOp.Ass =
+  "="
+
+BinOp.AddAss =
+  "+="
+
+BinOp.DivAss =
+  "/="
+
+BinOp.MulAss =
+  "*="
+
+BinOp.ModAss =
+  "%="
+
+BinOp.ShlAss =
+  ">>="
+
+BinOp.ShrAss =
+  "<<="
+
+BinOp.MinAss =
+  "-="
+
+BinOp.BorAss =
+  "|="
+
+BinOp.BandAss =
+  "&="
+
+BinOp.XorAss =
+  "^="
+
+CastExpr.CastExpr =
+  Attr* Expr "as" Type
+
+ParenExpr.ParenExpr =
+  Attr* "(" Attr* Expr ")"
+
+ArrayExpr.ArrayExpr =
+  Attr* "[" Attr* ArrayExprInner "]"
+
+ArrayExprInner = 
+  ExprList
+
+ArrayExprInner.InitWithLength = 
+  Expr ";" Expr
+
+ExprList.Trailing = {Expr ","}+ ","
+ExprList.NoTrailing = {Expr ","}*
+
+IndexExpr.IndexExpr =
+  Attr* base:Expr "[" index:Expr "]"
+
+TupleExpr.TupleExpr =
+  Attr* "(" Attr* fields:ExprList ")"
+
+RecordExpr.RecordExpr =
+  Path RecordExprFieldList
+
+RecordExprFieldList.RecordExprFieldList =
+  "{"
+    Attr*
+    fields:RecExprFieldList
+    SpreadOption
+  "}"
+
+RecExprFieldList.Trailing = {RecordExprField ","}+ ","
+RecExprFieldList.NoTrailing = {RecordExprField ","}*
+
+Spread.Spread = ".." spread:Expr
+
+SpreadOption.None =
+SpreadOption.Some = Spread
+
+RecordExprField.RecordExprField =
+  Attr* NameRef ColonExprOption
+
+ColonExpr.ColonExpr = ":" Expr
+
+ColonExprOption.None =
+ColonExprOption.Some = ColonExpr
+
+CallExpr.CallExpr =
+  Attr* Expr ArgList
+
+ArgList.ArgList =
+  "(" args:ExprList ")"
+
+MethodCallExpr.MethodCallExpr =
+  Attr* Expr "." NameRef GenericArgListOption ArgList
+
+FieldExpr.FieldExpr =
+  Attr* Expr "." NameRef
+
+ClosureExpr.ClosureExpr =
+  Attr* StaticOption AsyncOption MoveOption ParamList RetTypeOption
+  body:Expr
+
+AsyncOption.None =
+AsyncOption.Some = "async"
+
+MoveOption.None =
+MoveOption.Some = "move"
+
+IfExpr.IfExpr =
+  Attr* "if" Condition then_branch:BlockExpr
+  ElseBranchOption
+
+ElseBranch.ElseBranch = "else" else_branch:ElseBranchInner
+
+ElseBranchInner = IfExpr
+ElseBranchInner = BlockExpr
+
+ElseBranchOption.None =
+ElseBranchOption.Some = ElseBranch
+
+Condition.Condition =
+  "let" Pat "=" Expr
+
+Condition =
+  Expr
+
+LoopExpr.LoopExpr =
+  Attr* LabelOption "loop"
+  loop_body:BlockExpr
+
+LabelOption.None =
+LabelOption.Some = Label
+
+ForExpr.ForExpr =
+  Attr* LabelOption "for" Pat "in" iterable:Expr
+  loop_body:BlockExpr
+
+WhileExpr.WhileExpr =
+  Attr* LabelOption "while" Condition
+  loop_body:BlockExpr
+
+Label.Label =
+  "lifetime"
+
+BreakExpr.BreakExpr =
+  Attr* "break" LifetimeOption ExprOption
+
+ContinueExpr.ContinueExpr =
+  Attr* "continue" LifetimeOption
+
+RangeExpr.RangeExpr =
+  Attr* start:ExprOption op:RangeOp end:ExprOption
+
+RangeOp.Exclusive = ".."
+RangeOp.Inclusive = "..="
+
+MatchExpr.MatchExpr =
+  Attr* "match" Expr MatchArmList
+
+MatchArmList.MatchArmList =
+  "{"
+    Attr*
+    arms:MatchArm*
+  "}"
+
+MatchArm.MatchArm =
+  Attr* Pat guard:MatchGuardOption "=>" Expr CommaOption
+
+MatchGuardOption.None =
+MatchGuardOption.Some = MatchGuard
+
+CommaOption.None =
+CommaOption.Some = ","
+
+MatchGuard.MatchGuard =
+  "if" Expr
+
+ReturnExpr.ReturnExpr =
+  Attr* "return" ExprOption
+
+AwaitExpr.AwaitExpr =
+  Attr* Expr "." "await"
+
+BoxExpr.BoxExpr =
+  Attr* "box" Expr
+
+//*************************//
+//          Types          //
+//*************************//
+
+context-free sorts
+  Type ParenType NeverType PathType TupleType PtrType RefType ArrayType SliceType
+  InferType FnPtrType ForType ImplTraitType DynTraitType TypeBoundList TypeBound
+  
+  TypeList ConstOrMut QuestionMarkOption
+
+context-free syntax
+
+Type =
+  ArrayType
+
+Type =
+  DynTraitType
+
+Type =
+  FnPtrType
+
+Type =
+  ForType
+
+Type =
+  ImplTraitType
+
+Type =
+  InferType
+
+Type =
+  NeverType
+
+Type =
+  ParenType
+
+Type =
+  PathType
+
+Type =
+  PtrType
+
+Type =
+  RefType
+
+Type =
+  SliceType
+
+Type =
+  TupleType
+
+ParenType.ParenType =
+  "(" Type ")"
+
+NeverType.NeverType =
+  "!"
+
+PathType =
+  Path
+
+TupleType.TupleType =
+  "(" fields:TypeList ")"
+
+TypeList.Trailing = {Type ","}+ ","
+TypeList.NoTrailing = {Type ","}*
+
+PtrType.PtrType =
+  "*" ConstOrMut Type
+
+ConstOrMut.Const = "const"
+ConstOrMut.Mut = "mut"
+
+RefType.RefType =
+  "&" LifetimeOption MutOption Type
+
+ArrayType.ArrayType =
+  "[" Type ";" Expr "]"
+
+SliceType.SliceType =
+  "[" Type "]"
+
+InferType.InferType =
+  "_"
+
+FnPtrType.FnPtrType =
+  ConstOption AsyncOption UnsafeOption AbiOption "fn" ParamList RetTypeOption
+
+ForType.ForType =
+  "for" GenericParamList Type
+
+ImplTraitType.ImplTraitType =
+  "impl" TypeBoundList
+
+DynTraitType.DynTraitType =
+  "dyn" TypeBoundList
+
+TypeBoundList.Trailing = {Type "+"}+ "+"
+TypeBoundList.NoTrailing = {Type "+"}+
+
+TypeBound.LifeTime =
+  "lifetime"
+
+TypeBound.TypeBound =
+  QuestionMarkOption Type
+
+QuestionMarkOption.None =
+QuestionMarkOption.Some = "?"
+
+//************************//
+//        Patterns        //
+//************************//
+
+context-free sorts
+  Pat LiteralPat IdentPat WildcardPat RangePat RefPat RecordPat RecordPatFieldList
+  RecordPatField TupleStructPat TuplePat ParenPat SlicePat PathPat OrPat BoxPat RestPat
+  MacroPat
+  
+  RefOption AtPat RecPatFieldList Rest RestOption NameRefColon NameRefColonOption PatList
+
+context-free syntax
+
+Pat =
+  IdentPat
+
+Pat =
+  BoxPat
+
+Pat =
+  RestPat
+
+Pat =
+  LiteralPat
+
+Pat =
+  MacroPat
+
+Pat =
+  OrPat
+
+Pat =
+  ParenPat
+
+Pat =
+  PathPat
+
+Pat =
+  WildcardPat
+
+Pat =
+  RangePat
+
+Pat =
+  RecordPat
+
+Pat =
+  RefPat
+
+Pat =
+  SlicePat
+
+Pat =
+  TuplePat
+
+Pat =
+  TupleStructPat
+
+LiteralPat =
+  Literal
+
+IdentPat.IdentPat =
+  Attr* RefOption MutOption Name AtPatOption
+
+RefOption.None =
+RefOption.Some = "ref"
+
+AtPat.AtPat = "@" Pat
+
+AtPatOption.None =
+AtPatOption.Some = AtPat
+
+WildcardPat.WildcardPat =
+  "_"
+
+RangePat.RangePat =
+  start:Pat op:RangeOp end:Pat
+
+RefPat.RefPat =
+  "&" MutOption Pat
+
+RecordPat.RecordPat =
+  Path RecordPatFieldList
+
+RecordPatFieldList.RecordPatFieldList =
+  "{"
+    fields:RecPatFieldList
+    RestOption
+  "}"
+
+RecPatFieldList.Trailing = {RecordPatField ","}+ ","
+RecPatFieldList.NoTrailing = {RecordPatField ","}*
+
+Rest.Rest = ".."
+
+RestOption.None =
+RestOption.Some = Rest
+
+RecordPatField.RecordPatField =
+  Attr* NameRefColonOption Pat
+
+NameRefColon.NameRefColon = NameRef ":"
+
+NameRefColonOption.None =
+NameRefColonOption.Some = NameRefColonOption
+
+TupleStructPat.TupleStructPat =
+   Path "(" fields:PatList ")"
+
+PatList.Trailing = {Pat ","}+ ","
+PatList.NoTrailing = {Pat ","}*
+
+TuplePat.TuplePat =
+   "(" fields:PatList ")"
+
+ParenPat.ParenPat =
+  "(" Pat ")"
+
+SlicePat.SlicePat =
+  "[" PatList "]"
+
+PathPat =
+  Path
+
+OrPat.Trailing = {Pat "|"}+ "|"
+OrPat.NoTrailing = {Pat "|"}+
+
+BoxPat.BoxPat =
+  "box" Pat
+
+RestPat.RestPat =
+  ".."
+
+MacroPat =
+  MacroCall
