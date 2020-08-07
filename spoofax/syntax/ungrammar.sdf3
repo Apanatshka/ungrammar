@@ -287,7 +287,7 @@ UTList.NoTrailing = {UseTree ","}*
 
 Fn.Fn =
  Attr* VisibilityOption
- DefaultOption AsyncOrConstOption "unsafe" Abi
+ DefaultOption AsyncOrConstOption UnsafeOption AbiOption
  "fn" Name GenericParamListOption ParamList RetTypeOption WhereClauseOption
  BlockExprOrSemi
 

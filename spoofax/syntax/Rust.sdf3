@@ -16,6 +16,8 @@ context-free syntax
 
   Start = SourceFile
 
+lexical syntax
+
   LAYOUT = [\ \t\n\r]
 
 context-free restrictions
