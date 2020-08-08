@@ -43,13 +43,13 @@ PathSegment.Super =
   "super"
 
 PathSegment.PathSeg =
-  ColonOption NameRef
+  ColonOption Name
 
 PathSegment.GenericSeg =
-  NameRef GenericArgListOption
+  Name GenericArgListOption
 
 PathSegment.ParamListSeg =
-  NameRef ParamList RetTypeOption
+  Name ParamList RetTypeOption
 
 PathSegment.Renaming =
   "<" Type PathSegmentAsOption ">"
@@ -78,7 +78,7 @@ TypeArg =
   Type
 
 AssocTypeArg.AssocTypeArg =
-  NameRef AssocTypeArgRhs
+  Name AssocTypeArgRhs
 
 AssocTypeArgRhs.TypeBound =
   ":" TypeBoundList

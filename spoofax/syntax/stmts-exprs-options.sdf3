@@ -38,4 +38,4 @@ CommaOption.None =
 CommaOption.Some = COMMA
 
 ExprOption.None =
-ExprOption.Some = ExprOption
+ExprOption.Some = Expr

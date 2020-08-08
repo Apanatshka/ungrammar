@@ -133,22 +133,22 @@ Expr.WhileExpr =
 Literal.Literal =
   Attr* value:Value
 
-Value.Int =
+Value =
   INT
 
-Value.Float =
+Value =
   FLOAT
 
-Value.String =
+Value =
   STRING
 
-Value.RawString =
+Value =
   RAWSTRING
 
-Value.ByteString =
+Value =
   BYTESTRING
 
-Value.RawByteString =
+Value =
   RAWBYTESTRING
 
 Value.True =
@@ -157,10 +157,10 @@ Value.True =
 Value.False =
   "false"
 
-Value.Char =
+Value =
   CHAR
 
-Value.Byte =
+Value =
   BYTE
 
 BlockExpr.BlockExpr =
