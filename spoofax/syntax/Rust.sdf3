@@ -1,8 +1,36 @@
 module Rust
 
+// Rust Un-Grammar "mechanically" translated to SDF3.
+//
+// This grammar specifies the structure of Rust's concrete syntax tree.
+// It does not specify parsing rules (ambiguities, precedence, etc are out of scope).
+// Tokens are processed -- contextual keywords are recognised, compound operators glued.
+//
+// Legend:
+//
+//   //          -- comment
+//   Name.Cons = -- non-terminal definition with AST constructor name
+//   "ident"     -- terminal
+//   A B         -- sequence
+//   A*          -- zero or more repetition
+//   A+          -- one or more repetition
+//   {A ","}*    -- zero or more repetition with separator
+//   label:A     -- suggested label for field
+//
+// Sadly SDF3 dropped support for `A?` as zero or one repetition, because for ASTs in Spoofax and
+// SDF3 disambiguation rules it is often better to just have two different rules. Of course if a
+// rule has lots of these it still makes sense to write your own expansion of `A?` as
+// `AOption.None =` and `AOption.Some = A`. But to stay in keeping with the style used in the
+// ungrammar I've done this consistently throughout the grammar even when "flattening" the options
+// would have made more sense. 
+
 imports
   
-  ungrammar
+  paths-macros
+  items
+  stmts-exprs
+  types
+  patterns
 
 context-free start-symbols
   

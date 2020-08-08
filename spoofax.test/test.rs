@@ -1,1 +1,1 @@
-shebang
+shebang       fn ident  (self ) ; 

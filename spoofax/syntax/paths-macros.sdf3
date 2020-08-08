@@ -1,0 +1,132 @@
+module paths-macros
+
+imports
+
+  items
+  types
+  stmts-exprs
+
+context-free sorts
+  Name NameRef Path PathSegment GenericArgList GenericArg TypeArg AssocTypeArg
+  LifetimeArg ConstArg MacroCall TokenTree MacroItems MacroStmts
+  
+  PathQualifierOption PathQualifier ColonOption GenericArgListOption RetTypeOption
+  PathSegmentAsOption PathSegmentAs GenArgList SemiOption NameOption ExprOption
+
+context-free syntax
+
+Name.Name =
+  "ident"
+
+NameRef.Ident =
+  "ident"
+
+NameRef.Int =
+  "int_number"
+
+Path.Path =
+  qualifier:PathQualifierOption segment:PathSegment
+
+PathQualifierOption.None =
+PathQualifierOption.Some = PathQualifier
+
+PathQualifier.PathQualifier = Path "::"
+
+PathSegment.Crate =
+  "crate"
+
+PathSegment.Self =
+  "self"
+
+PathSegment.Super =
+  "super"
+
+PathSegment.PathSeg =
+  ColonOption NameRef
+
+ColonOption.None =
+ColonOption.Some = "::"
+
+PathSegment.GenericSeg =
+  NameRef GenericArgListOption
+
+GenericArgListOption.None =
+GenericArgListOption.Some = GenericArgList
+
+PathSegment.ParamListSeg =
+  NameRef ParamList RetTypeOption
+
+RetTypeOption.None =
+RetTypeOption.Some = RetType
+
+PathSegment.Renaming =
+  "<" PathType PathSegmentAsOption ">"
+
+PathSegmentAs.PathSegmentAs = "as" PathType
+
+PathSegmentAsOption.None =
+PathSegmentAsOption.Some = PathSegmentAs
+
+GenericArgList.GenericArgList =
+  ColonOption "<" GenArgList ">"
+
+GenArgList.Trailing = {GenericArg ","}+ ","
+GenArgList.NoTrailing = {GenericArg ","}*
+
+GenericArg =
+  TypeArg
+
+GenericArg =
+  AssocTypeArg
+
+GenericArg =
+  LifetimeArg
+
+GenericArg =
+  ConstArg
+
+TypeArg =
+  Type
+
+AssocTypeArg.AssocTypeArg =
+  NameRef AssocTypeArgRhs
+
+AssocTypeArgRhs.TypeBound =
+  ":" TypeBoundList
+
+AssocTypeArgRhs.EqBound =
+  "=" Type
+
+LifetimeArg.Lifetime =
+  "lifetime"
+
+ConstArg =
+  Expr
+
+MacroCall.MacroCall =
+  Attr* Path "!" NameOption TokenTree SemiOption
+
+SemiOption.None =
+SemiOption.Some = ";"
+
+NameOption.None =
+NameOption.Some = Name
+
+TokenTree.TokenTreeRound =
+  "(" ")"
+
+TokenTree.TokenTreeCurly =
+  "{" "}"
+
+TokenTree.TokenTreeSquare =
+  "[" "]"
+
+MacroItems.MacroItems =
+  Item*
+
+MacroStmts.MacroStmts =
+  statements:Stmt*
+  ExprOption
+
+ExprOption.None =
+ExprOption.Some = ExprOption

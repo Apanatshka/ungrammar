@@ -1,0 +1,110 @@
+module types
+
+imports
+  paths-macros
+  items
+  stmts-exprs
+
+context-free sorts
+  Type ParenType NeverType PathType TupleType PtrType RefType ArrayType SliceType
+  InferType FnPtrType ForType ImplTraitType DynTraitType TypeBoundList TypeBound
+  
+  TypeList ConstOrMut QuestionMarkOption
+
+context-free syntax
+
+Type =
+  ArrayType
+
+Type =
+  DynTraitType
+
+Type =
+  FnPtrType
+
+Type =
+  ForType
+
+Type =
+  ImplTraitType
+
+Type =
+  InferType
+
+Type =
+  NeverType
+
+Type =
+  ParenType
+
+Type =
+  PathType
+
+Type =
+  PtrType
+
+Type =
+  RefType
+
+Type =
+  SliceType
+
+Type =
+  TupleType
+
+ParenType.ParenType =
+  "(" Type ")"
+
+NeverType.NeverType =
+  "!"
+
+PathType =
+  Path
+
+TupleType.TupleType =
+  "(" fields:TypeList ")"
+
+TypeList.Trailing = {Type ","}+ ","
+TypeList.NoTrailing = {Type ","}*
+
+PtrType.PtrType =
+  "*" ConstOrMut Type
+
+ConstOrMut.Const = "const"
+ConstOrMut.Mut = "mut"
+
+RefType.RefType =
+  "&" LifetimeOption MutOption Type
+
+ArrayType.ArrayType =
+  "[" Type ";" Expr "]"
+
+SliceType.SliceType =
+  "[" Type "]"
+
+InferType.InferType =
+  "_"
+
+FnPtrType.FnPtrType =
+  ConstOption AsyncOption UnsafeOption AbiOption "fn" ParamList RetTypeOption
+
+ForType.ForType =
+  "for" GenericParamList Type
+
+ImplTraitType.ImplTraitType =
+  "impl" TypeBoundList
+
+DynTraitType.DynTraitType =
+  "dyn" TypeBoundList
+
+TypeBoundList.Trailing = {Type "+"}+ "+"
+TypeBoundList.NoTrailing = {Type "+"}+
+
+TypeBound.LifeTime =
+  "lifetime"
+
+TypeBound.TypeBound =
+  QuestionMarkOption Type
+
+QuestionMarkOption.None =
+QuestionMarkOption.Some = "?"

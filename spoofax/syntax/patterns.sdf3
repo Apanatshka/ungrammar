@@ -1,0 +1,138 @@
+module patterns
+
+imports
+  paths-macros
+  items
+  stmts-exprs
+
+context-free sorts
+  Pat LiteralPat IdentPat WildcardPat RangePat RefPat RecordPat RecordPatFieldList
+  RecordPatField TupleStructPat TuplePat ParenPat SlicePat PathPat OrPat BoxPat RestPat
+  MacroPat
+  
+  RefOption AtPat RecPatFieldList Rest RestOption NameRefColon NameRefColonOption PatList
+
+context-free syntax
+
+Pat =
+  IdentPat
+
+Pat =
+  BoxPat
+
+Pat =
+  RestPat
+
+Pat =
+  LiteralPat
+
+Pat =
+  MacroPat
+
+Pat =
+  OrPat
+
+Pat =
+  ParenPat
+
+Pat =
+  PathPat
+
+Pat =
+  WildcardPat
+
+Pat =
+  RangePat
+
+Pat =
+  RecordPat
+
+Pat =
+  RefPat
+
+Pat =
+  SlicePat
+
+Pat =
+  TuplePat
+
+Pat =
+  TupleStructPat
+
+LiteralPat =
+  Literal
+
+IdentPat.IdentPat =
+  Attr* RefOption MutOption Name AtPatOption
+
+RefOption.None =
+RefOption.Some = "ref"
+
+AtPat.AtPat = "@" Pat
+
+AtPatOption.None =
+AtPatOption.Some = AtPat
+
+WildcardPat.WildcardPat =
+  "_"
+
+RangePat.RangePat =
+  start:Pat op:RangeOp end:Pat
+
+RefPat.RefPat =
+  "&" MutOption Pat
+
+RecordPat.RecordPat =
+  Path RecordPatFieldList
+
+RecordPatFieldList.RecordPatFieldList =
+  "{"
+    fields:RecPatFieldList
+    RestOption
+  "}"
+
+RecPatFieldList.Trailing = {RecordPatField ","}+ ","
+RecPatFieldList.NoTrailing = {RecordPatField ","}*
+
+Rest.Rest = ".."
+
+RestOption.None =
+RestOption.Some = Rest
+
+RecordPatField.RecordPatField =
+  Attr* NameRefColonOption Pat
+
+NameRefColon.NameRefColon = NameRef ":"
+
+NameRefColonOption.None =
+NameRefColonOption.Some = NameRefColonOption
+
+TupleStructPat.TupleStructPat =
+   Path "(" fields:PatList ")"
+
+PatList.Trailing = {Pat ","}+ ","
+PatList.NoTrailing = {Pat ","}*
+
+TuplePat.TuplePat =
+   "(" fields:PatList ")"
+
+ParenPat.ParenPat =
+  "(" Pat ")"
+
+SlicePat.SlicePat =
+  "[" PatList "]"
+
+PathPat =
+  Path
+
+OrPat.Trailing = {Pat "|"}+ "|"
+OrPat.NoTrailing = {Pat "|"}+
+
+BoxPat.BoxPat =
+  "box" Pat
+
+RestPat.RestPat =
+  ".."
+
+MacroPat =
+  MacroCall
