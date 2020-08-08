@@ -1,5 +1,11 @@
 module keywords
 
+context-free sorts
+  STRICT_KEYWORD KW_AS KW_BREAK KW_CONST KW_CONTINUE KW_CRATE KW_ELSE KW_ENUM KW_EXTERN KW_FALSE
+  KW_FN KW_FOR KW_IF KW_IMPL KW_IN KW_LET KW_LOOP KW_MATCH KW_MOD KW_MOVE KW_MUT KW_PUB KW_REF
+  KW_RETURN KW_SELFVALUE KW_SELFTYPE KW_STATIC KW_STRUCT KW_SUPER KW_TRAIT KW_TRUE KW_TYPE
+  KW_UNSAFE KW_USE KW_WHERE KW_WHILE KW_ASYNC KW_AWAIT KW_DYN
+
 context-free syntax // strict
 
   STRICT_KEYWORD = KW_AS
@@ -82,6 +88,10 @@ context-free syntax // strict
   KW_AWAIT.AWAIT = "await"
   KW_DYN.DYN = "dyn"
 
+context-free sorts
+  RESERVED_KEYWORD KW_ABSTRACT KW_BECOME KW_BOX KW_DO KW_FINAL KW_MACRO KW_OVERRIDE KW_PRIV
+  KW_TYPEOF KW_UNSIZED KW_VIRTUAL KW_YIELD KW_TRY
+
 context-free syntax // reserved
 
   RESERVED_KEYWORD = KW_ABSTRACT
@@ -114,6 +124,8 @@ context-free syntax // reserved
   // 2018 edition additions:
   KW_TRY.TRY = "try"
 
+context-free sorts
+  WEAK_KEYWORD KW_UNION KW_STATICLIFETIME
 
 context-free syntax // weak
 
@@ -124,6 +136,9 @@ context-free syntax // weak
   KW_STATICLIFETIME.STATICLIFETIME = "'static"
 
   // Before the 2018 edition, dyn was also weak (now strict)
+
+context-free sorts
+  DEFAULT BANG AUTO SEMI COLON COMMA QMARK
 
 context-free syntax // other
 
