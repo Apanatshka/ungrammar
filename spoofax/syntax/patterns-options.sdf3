@@ -1,0 +1,22 @@
+module patterns-options
+
+imports
+  keywords
+  patterns
+
+context-free sorts
+  RefOption AtPatOption RestOption NameRefColonOption
+
+context-free syntax
+
+RefOption.None =
+RefOption.Some = KW_REF
+
+AtPatOption.None =
+AtPatOption.Some = AtPat
+
+RestOption.None =
+RestOption.Some = Rest
+
+NameRefColonOption.None =
+NameRefColonOption.Some = NameRefColonOption

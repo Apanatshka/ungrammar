@@ -1,15 +1,20 @@
 module types
 
 imports
+  tokens
   paths-macros
   items
   stmts-exprs
 
+  types-options
+  items-options
+  stmts-exprs-options
+
 context-free sorts
   Type ParenType NeverType PathType TupleType PtrType RefType ArrayType SliceType
   InferType FnPtrType ForType ImplTraitType DynTraitType TypeBoundList TypeBound
-  
-  TypeList ConstOrMut QuestionMarkOption
+
+  TypeList ConstOrMut
 
 context-free syntax
 
@@ -101,10 +106,7 @@ TypeBoundList.Trailing = {Type "+"}+ "+"
 TypeBoundList.NoTrailing = {Type "+"}+
 
 TypeBound.LifeTime =
-  "lifetime"
+  LIFETIME
 
 TypeBound.TypeBound =
   QuestionMarkOption Type
-
-QuestionMarkOption.None =
-QuestionMarkOption.Some = "?"

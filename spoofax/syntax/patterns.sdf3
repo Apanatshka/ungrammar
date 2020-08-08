@@ -1,16 +1,20 @@
 module patterns
 
 imports
+
   paths-macros
   items
   stmts-exprs
+
+  patterns-options
+  items-options
 
 context-free sorts
   Pat LiteralPat IdentPat WildcardPat RangePat RefPat RecordPat RecordPatFieldList
   RecordPatField TupleStructPat TuplePat ParenPat SlicePat PathPat OrPat BoxPat RestPat
   MacroPat
-  
-  RefOption AtPat RecPatFieldList Rest RestOption NameRefColon NameRefColonOption PatList
+
+  AtPat RecPatFieldList Rest NameRefColon PatList
 
 context-free syntax
 
@@ -65,13 +69,7 @@ LiteralPat =
 IdentPat.IdentPat =
   Attr* RefOption MutOption Name AtPatOption
 
-RefOption.None =
-RefOption.Some = "ref"
-
 AtPat.AtPat = "@" Pat
-
-AtPatOption.None =
-AtPatOption.Some = AtPat
 
 WildcardPat.WildcardPat =
   "_"
@@ -95,17 +93,10 @@ RecPatFieldList.Trailing = {RecordPatField ","}+ ","
 RecPatFieldList.NoTrailing = {RecordPatField ","}*
 
 Rest.Rest = ".."
-
-RestOption.None =
-RestOption.Some = Rest
-
 RecordPatField.RecordPatField =
   Attr* NameRefColonOption Pat
 
 NameRefColon.NameRefColon = NameRef ":"
-
-NameRefColonOption.None =
-NameRefColonOption.Some = NameRefColonOption
 
 TupleStructPat.TupleStructPat =
    Path "(" fields:PatList ")"

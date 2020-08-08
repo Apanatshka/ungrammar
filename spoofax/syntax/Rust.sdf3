@@ -10,7 +10,7 @@ module Rust
 //
 //   //          -- comment
 //   Name.Cons = -- non-terminal definition with AST constructor name
-//   "ident"     -- terminal
+//   IDENT     -- terminal
 //   A B         -- sequence
 //   A*          -- zero or more repetition
 //   A+          -- one or more repetition

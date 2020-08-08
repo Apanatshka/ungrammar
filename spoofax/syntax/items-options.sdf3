@@ -1,0 +1,99 @@
+module items-options
+
+imports
+  keywords
+  tokens
+  items
+
+context-free sorts
+  ShebangOption VisibilityOption RenameOption UseTreeQualifierOption DefaultOption
+  AsyncOrConstOption UnsafeOption AbiOption WhereClauseOption GenericParamListOption StringOption
+  SelfParamCommaOption SelfParamRefOption LifetimeOption MutOption ParamPatTypeOption
+  ColonTypeBoundListOption EqExprOption StaticOption AutoOption ConstOption BangOption
+  ImplForOption EqTypeOption WherePredForOption VisibilityModOption AttrInnerOption RetTypeOption
+
+context-free syntax
+  
+ShebangOption.None =
+ShebangOption.Some = SHEBANG
+
+VisibilityOption.Some = Visibility
+VisibilityOption.None =
+
+RenameOption.None =
+RenameOption.Some = Rename
+
+UseTreeQualifierOption.None =
+UseTreeQualifierOption.Some = UseTreeQualifier
+
+DefaultOption.None =
+DefaultOption.Some = DEFAULT
+
+AsyncOrConstOption.None =
+AsyncOrConstOption.Some = AsyncOrConst
+
+UnsafeOption.None =
+UnsafeOption.Some = KW_UNSAFE
+
+AbiOption.None =
+AbiOption.Some = Abi
+
+WhereClauseOption.None =
+WhereClauseOption.Some = WhereClause
+
+GenericParamListOption.None =
+GenericParamListOption.Some = GenericParamList
+
+StringOption.Some = STRING
+StringOption.None =
+
+SelfParamCommaOption.None =
+SelfParamCommaOption.Some = SelfParamComma
+
+SelfParamRefOption.None =
+SelfParamRefOption.Some = SelfParamRef
+
+LifetimeOption.Some = LIFETIME
+LifetimeOption.None =
+
+MutOption.None =
+MutOption.Some = KW_MUT
+
+ParamPatTypeOption.None =
+ParamPatTypeOption.Some = ParamPatType
+
+ColonTypeBoundListOption.None =
+ColonTypeBoundListOption.Some = ColonTypeBoundList
+
+EqExprOption.Some = EqExpr
+EqExprOption.None =
+
+StaticOption.Some = KW_STATIC
+StaticOption.None =
+
+AutoOption.Some = AUTO
+AutoOption.None =
+
+ConstOption.None =
+ConstOption.Some = KW_CONST
+
+BangOption.None =
+BangOption.Some = BANG
+
+ImplForOption.None =
+ImplForOption.Some = ImplFor
+
+EqTypeOption.None =
+EqTypeOption.Some = EqType
+
+WherePredForOption.None =
+WherePredForOption.Some = WherePredFor
+
+VisibilityModOption.None =
+VisibilityModOption.Some = VisibilityMod
+
+AttrInnerOption.None =
+AttrInnerOption.Some = AttrInner
+
+RetTypeOption.None =
+RetTypeOption.Some = RetType

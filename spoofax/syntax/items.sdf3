@@ -2,29 +2,29 @@ module items
 
 imports
 
+  tokens
   paths-macros
   stmts-exprs
   types
   patterns
 
+  paths-macros-options
+  items-options
+  types-options
+
 context-free sorts
-  SourceFile Item Module ItemList ExternCrate Rename Use UseTree UseTreeList Fn
+  SourceFile Item ItemList Rename UseTree UseTreeList Fn
   Abi ParamList SelfParam Param RetType TypeAlias Struct RecordFieldList
   RecordField TupleFieldList TupleField FieldList Enum VariantList Variant Union
-  AdtDef Const Static Trait AssocItemList AssocItem Impl ExternBlock ExternItemList
+  AdtDef Const Static AssocItemList AssocItem ExternItemList
   ExternItem GenericParamList GenericParam TypeParam ConstParam LifetimeParam
   WhereClause WherePred Visibility Attr
-  
-  ShebangOption VisibilityOption ItemListOrSemi NameRefOrSelf RenameOption NameOrWld
-  UseTreeQualifierOption UseTreeQualifier PathOption StarOrUseTreeList UTList DefaultOption
-  AsyncOrConstOption AsyncOrConst UnsafeOption AbiOption WhereClauseOption GenericParamListOption
-  BlockExprOrSemi StringOption ParamListInner SelfParamComma SelfParamCommaOption
-  ParamListInnerParamList SelfParamInner SelfParamRefOption SelfParamRef LifetimeOption MutOption
-  ParamInner ParamPatTypeOption ParamPatType ColonTypeBoundListOption ColonTypeBoundList
-  TypeBoundListOption StructInner RecordFieldListOrSemi RecFieldList TupFieldList
-  VarList EqExpr EqExprOption StaticOption AutoOption ConstOption BangOption ImplFor ImplForOption
-  GenParamList EqType EqTypeOption WherePredList WherePredFor WherePredForOption LifetimeOrType
-  VisibilityMod VisibilityModOption VisibilityModInner AttrInner AttrInnerOption
+
+  ItemListOrSemi NameRefOrSelf NameOrWld UseTreeQualifier StarOrUseTreeList UTList AsyncOrConst
+  BlockExprOrSemi ParamListInner SelfParamComma ParamListInnerParamList SelfParamInner SelfParamRef
+  ParamInner ParamPatType ColonTypeBoundList StructInner RecordFieldListOrSemi RecFieldList
+  TupFieldList VarList EqExpr ImplFor GenParamList EqType WherePredList WherePredFor LifetimeOrType
+  VisibilityMod VisibilityModInner AttrInner 
 
 context-free syntax
 
@@ -33,32 +33,35 @@ SourceFile.SourceFile =
   Attr*
   Item*
 
-ShebangOption.None =
-ShebangOption.Some = "shebang"
-
 Item =
   Const
 
 Item =
   Enum
 
-Item =
-  ExternBlock
+Item.ExternBlock =
+  Attr* Abi ExternItemList
 
-Item =
-  ExternCrate
+Item.ExternCrate =
+  Attr* VisibilityOption
+  "extern" "crate" NameRefOrSelf RenameOption ";"
 
 Item =
   Fn
 
-Item =
-  Impl
+Item.Impl =
+  Attr* VisibilityOption
+  DefaultOption UnsafeOption
+  "impl" ConstOption GenericParamListOption ImplForOption self_ty:Type WhereClauseOption
+  AssocItemList
 
 Item =
   MacroCall
 
-Item =
-  Module
+Item.Module =
+  Attr* VisibilityOption
+  "mod" Name
+  ItemListOrSemi
 
 Item =
   Static
@@ -66,8 +69,11 @@ Item =
 Item =
   Struct
 
-Item =
-  Trait
+Item.Trait =
+  Attr* VisibilityOption
+  UnsafeOption AutoOption
+  "trait" Name GenericParamList ColonTypeBoundListOption WhereClause
+  AssocItemList
 
 Item =
   TypeAlias
@@ -75,16 +81,9 @@ Item =
 Item =
   Union
 
-Item =
-  Use
-
-Module.Module =
+Item.Use =
   Attr* VisibilityOption
-  "mod" Name
-  ItemListOrSemi
-
-VisibilityOption.Some = Visibility
-VisibilityOption.None =
+  "use" UseTree ";"
 
 ItemListOrSemi = ItemList
 ItemListOrSemi.Semi = ";"
@@ -92,15 +91,8 @@ ItemListOrSemi.Semi = ";"
 ItemList.ItemList =
   "{" Attr* Item* "}"
 
-ExternCrate.ExternCrate =
-  Attr* VisibilityOption
-  "extern" "crate" NameRefOrSelf RenameOption ";"
-
 NameRefOrSelf = NameRef
 NameRefOrSelf.Self = "self"
-
-RenameOption.None =
-RenameOption.Some = Rename
 
 Rename.Rename =
   "as" NameOrWld
@@ -108,20 +100,10 @@ Rename.Rename =
 NameOrWld = Name
 NameOrWld.Wld = "_"
 
-Use.Use =
-  Attr* VisibilityOption
-  "use" UseTree ";"
-
 UseTree.UseTree =
   UseTreeQualifierOption StarOrUseTreeList
 
-UseTreeQualifierOption.None =
-UseTreeQualifierOption.Some = UseTreeQualifier
-
 UseTreeQualifier.UseTreeQualifier = PathOption "::"
-
-PathOption.None =
-PathOption.Some = Path
 
 StarOrUseTreeList.Star = "*"
 StarOrUseTreeList = UseTreeList
@@ -141,35 +123,14 @@ Fn.Fn =
  "fn" Name GenericParamListOption ParamList RetTypeOption WhereClauseOption
  BlockExprOrSemi
 
-DefaultOption.None =
-DefaultOption.Some = "default"
-
-AsyncOrConstOption.None =
-AsyncOrConstOption.Some = AsyncOrConst
-
 AsyncOrConst.Async = "async"
 AsyncOrConst.Const = "const"
-
-UnsafeOption.None =
-UnsafeOption.Some = "unsafe"
-
-AbiOption.None =
-AbiOption.Some = Abi
-
-WhereClauseOption.None =
-WhereClauseOption.Some = WhereClause
-
-GenericParamListOption.None =
-GenericParamListOption.Some = GenericParamList
 
 BlockExprOrSemi = BlockExpr
 BlockExprOrSemi.Semi = ";"
 
 Abi.Abi =
   "extern" StringOption
-
-StringOption.Some = "string"
-StringOption.None =
 
 ParamList.ParamList =
   "(" ParamListInner ")"
@@ -178,9 +139,6 @@ ParamListInner.Self = SelfParam
 ParamListInner.Multiple = SelfParamCommaOption ParamListInnerParamList
 
 SelfParamComma.SelfParamComma = SelfParam ","
-
-SelfParamCommaOption.None =
-SelfParamCommaOption.Some = SelfParamComma
 
 ParamListInnerParamList.Trailing = {Param ","}+ ","
 ParamListInnerParamList.NoTrailing = {Param ","}*
@@ -191,16 +149,7 @@ SelfParam.SelfParam =
 SelfParamInner.SelfParamRef = SelfParamRefOption MutOption "self"
 SelfParamInner.SelfParamTyped = MutOption "self" ":" Type
 
-SelfParamRefOption.None =
-SelfParamRefOption.Some = SelfParamRef
-
 SelfParamRef.SelfParamRef = "&" LifetimeOption
-
-LifetimeOption.Some = "lifetime"
-LifetimeOption.None =
-
-MutOption.None =
-MutOption.Some = "mut"
 
 Param.Param =
   Attr* ParamInner
@@ -208,9 +157,6 @@ Param.Param =
 ParamInner.ParamPat = Pat ParamPatTypeOption
 ParamInner = Type
 ParamInner.Rest = "..."
-
-ParamPatTypeOption.None =
-ParamPatTypeOption.Some = ParamPatType
 
 ParamPatType.ParamPatType = ":" Type
 
@@ -223,13 +169,7 @@ TypeAlias.TypeAlias =
   "type" Name GenericParamListOption ColonTypeBoundListOption WhereClauseOption
   "=" Type ";"
 
-ColonTypeBoundListOption.None =
-ColonTypeBoundListOption.Some = ColonTypeBoundList
-
 ColonTypeBoundList.ColonTypeBoundList = ":" TypeBoundListOption
-
-TypeBoundListOption.None =
-TypeBoundListOption.Some = TypeBoundList
 
 Struct.Struct =
   Attr* VisibilityOption
@@ -285,9 +225,6 @@ Variant.Variant =
 
 EqExpr.EqExpr = "=" Expr
 
-EqExprOption.Some = EqExpr
-EqExprOption.None =
-
 Union.Union =
   Attr* VisibilityOption
   "union" Name GenericParamListOption WhereClauseOption
@@ -313,18 +250,6 @@ Static.Static =
   StaticOption MutOption Name ":" Type
   "=" body:Expr ";"
 
-StaticOption.Some = "static"
-StaticOption.None =
-
-Trait.Trait =
-  Attr* VisibilityOption
-  UnsafeOption AutoOption
-  "trait" Name GenericParamList ColonTypeBoundListOption WhereClause
-  AssocItemList
-
-AutoOption.Some = "auto"
-AutoOption.None =
-
 AssocItemList.AssocItemList =
   "{" Attr* AssocItem* "}"
 
@@ -340,25 +265,7 @@ AssocItem =
 AssocItem =
   TypeAlias
 
-Impl.Impl =
-  Attr* VisibilityOption
-  DefaultOption UnsafeOption
-  "impl" ConstOption GenericParamListOption ImplForOption self_ty:Type WhereClauseOption
-  AssocItemList
-
-ConstOption.None =
-ConstOption.Some = "const"
-
-BangOption.None =
-BangOption.Some = "!"
-
 ImplFor.ImplFor = BangOption trait:Type "for"
-
-ImplForOption.None =
-ImplForOption.Some = ImplFor
-
-ExternBlock.ExternBlock =
-  Attr* Abi ExternItemList
 
 ExternItemList.ExternItemList =
   "{" Attr* ExternItem* "}"
@@ -393,15 +300,12 @@ TypeParam.TypeParam =
 
 EqType.EqType = "=" default_type:Type
 
-EqTypeOption.None =
-EqTypeOption.Some = EqType
-
 ConstParam.ConstParam =
   Attr* "const" Name ":" Type
   EqExprOption
 
 LifetimeParam.LifetimeParam =
-  Attr* "lifetime" ColonTypeBoundListOption
+  Attr* LIFETIME ColonTypeBoundListOption
 
 WhereClause.WhereClause =
   "where" predicates:WherePredList
@@ -414,19 +318,13 @@ WherePred.WherePred =
 
 WherePredFor.WherePredFor = "for" GenericParamList
 
-WherePredForOption.None =
-WherePredForOption.Some = WherePredFor
-
-LifetimeOrType.Lifetime = "lifetime"
+LifetimeOrType = LIFETIME
 LifetimeOrType = Type
 
 Visibility.Visibility =
   "pub" VisibilityModOption
 
 VisibilityMod.VisibilityMod = "(" VisibilityModInner ")"
-
-VisibilityModOption.None =
-VisibilityModOption.Some = VisibilityMod
 
 VisibilityModInner.Super =
   "super"
@@ -445,6 +343,3 @@ Attr.Attr =
 
 AttrInner.IsLiteral = "=" Literal
 AttrInner = TokenTree
-
-AttrInnerOption.None =
-AttrInnerOption.Some = AttrInner

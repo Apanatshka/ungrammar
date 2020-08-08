@@ -1,0 +1,15 @@
+module tokens
+
+context-free syntax
+
+SHEBANG.Shebang = "shebang"
+STRING.String = "string"
+LIFETIME.Lifetime = "lifetime"
+IDENT.Ident = "ident"
+INT.Int = "int_number"
+FLOAT.Float = "float_number"
+RAWSTRING.RawString = "raw_string"
+BYTESTRING.ByteString = "byte_string"
+RAWBYTESTRING.RawByteString = "raw_byte_string"
+CHAR.Char = "char"
+BYTE.Byte = "byte"

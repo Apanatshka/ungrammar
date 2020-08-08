@@ -1,0 +1,41 @@
+module stmts-exprs-options
+
+imports
+  keywords
+  stmts-exprs
+
+context-free sorts
+  ColonTypeOption SpreadOption ColonExprOption AsyncOption MoveOption ElseBranchOption LabelOption
+  MatchGuardOption CommaOption ExprOption
+
+context-free syntax
+
+ColonTypeOption.None =
+ColonTypeOption.Some = ColonType
+
+SpreadOption.None =
+SpreadOption.Some = Spread
+
+ColonExprOption.None =
+ColonExprOption.Some = ColonExpr
+
+AsyncOption.None =
+AsyncOption.Some = KW_ASYNC
+
+MoveOption.None =
+MoveOption.Some = KW_MOVE
+
+ElseBranchOption.None =
+ElseBranchOption.Some = ElseBranch
+
+LabelOption.None =
+LabelOption.Some = Label
+
+MatchGuardOption.None =
+MatchGuardOption.Some = MatchGuard
+
+CommaOption.None =
+CommaOption.Some = COMMA
+
+ExprOption.None =
+ExprOption.Some = ExprOption

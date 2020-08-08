@@ -2,33 +2,34 @@ module paths-macros
 
 imports
 
+  tokens
   items
   types
   stmts-exprs
 
+  paths-macros-options
+  items-options
+  stmts-exprs-options
+
 context-free sorts
   Name NameRef Path PathSegment GenericArgList GenericArg TypeArg AssocTypeArg
   LifetimeArg ConstArg MacroCall TokenTree MacroItems MacroStmts
-  
-  PathQualifierOption PathQualifier ColonOption GenericArgListOption RetTypeOption
-  PathSegmentAsOption PathSegmentAs GenArgList SemiOption NameOption ExprOption
+
+  PathQualifier PathSegmentAs GenArgList
 
 context-free syntax
 
 Name.Name =
-  "ident"
+  IDENT
 
 NameRef.Ident =
-  "ident"
+  IDENT
 
 NameRef.Int =
-  "int_number"
+  INT
 
 Path.Path =
   qualifier:PathQualifierOption segment:PathSegment
-
-PathQualifierOption.None =
-PathQualifierOption.Some = PathQualifier
 
 PathQualifier.PathQualifier = Path "::"
 
@@ -44,28 +45,16 @@ PathSegment.Super =
 PathSegment.PathSeg =
   ColonOption NameRef
 
-ColonOption.None =
-ColonOption.Some = "::"
-
 PathSegment.GenericSeg =
   NameRef GenericArgListOption
 
-GenericArgListOption.None =
-GenericArgListOption.Some = GenericArgList
-
 PathSegment.ParamListSeg =
   NameRef ParamList RetTypeOption
-
-RetTypeOption.None =
-RetTypeOption.Some = RetType
 
 PathSegment.Renaming =
   "<" PathType PathSegmentAsOption ">"
 
 PathSegmentAs.PathSegmentAs = "as" PathType
-
-PathSegmentAsOption.None =
-PathSegmentAsOption.Some = PathSegmentAs
 
 GenericArgList.GenericArgList =
   ColonOption "<" GenArgList ">"
@@ -98,19 +87,13 @@ AssocTypeArgRhs.EqBound =
   "=" Type
 
 LifetimeArg.Lifetime =
-  "lifetime"
+  LIFETIME
 
 ConstArg =
   Expr
 
 MacroCall.MacroCall =
   Attr* Path "!" NameOption TokenTree SemiOption
-
-SemiOption.None =
-SemiOption.Some = ";"
-
-NameOption.None =
-NameOption.Some = Name
 
 TokenTree.TokenTreeRound =
   "(" ")"
@@ -127,6 +110,3 @@ MacroItems.MacroItems =
 MacroStmts.MacroStmts =
   statements:Stmt*
   ExprOption
-
-ExprOption.None =
-ExprOption.Some = ExprOption

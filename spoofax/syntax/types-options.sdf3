@@ -1,0 +1,16 @@
+module types-options
+
+imports
+  keywords
+  types
+
+context-free sorts
+  QuestionMarkOption TypeBoundListOption
+
+context-free syntax
+
+QuestionMarkOption.None =
+QuestionMarkOption.Some = QMARK
+
+TypeBoundListOption.None =
+TypeBoundListOption.Some = TypeBoundList

@@ -1,0 +1,33 @@
+module paths-macros-options
+
+imports
+
+  keywords
+  paths-macros
+
+context-free sorts
+  PathQualifierOption ColonOption GenericArgListOption PathOption
+  PathSegmentAsOption SemiOption NameOption
+
+context-free syntax
+
+PathQualifierOption.None =
+PathQualifierOption.Some = PathQualifier
+
+ColonOption.None =
+ColonOption.Some = COLON
+
+GenericArgListOption.None =
+GenericArgListOption.Some = GenericArgList
+
+PathOption.None =
+PathOption.Some = Path
+
+PathSegmentAsOption.None =
+PathSegmentAsOption.Some = PathSegmentAs
+
+SemiOption.None =
+SemiOption.Some = SEMI
+
+NameOption.None =
+NameOption.Some = Name

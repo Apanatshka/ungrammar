@@ -1,10 +1,15 @@
 module stmts-exprs
 
 imports
+  tokens
   items
   patterns
   types
   paths-macros
+
+  stmts-exprs-options
+  items-options
+  paths-macros-options
 
 context-free sorts
   Stmt LetStmt ExprStmt Expr Literal PathExpr BlockExpr RefExpr TryExpr EffectExpr
@@ -12,10 +17,9 @@ context-free sorts
   RecordExprFieldList RecordExprField CallExpr ArgList MethodCallLExpr FieldExpr
   ClosureExpr IfExpr Condition LoopExpr ForExpr WhileExpr Label BreakExpr ContinueExpr
   RangeExpr MatchExpr MatchArmList MatchArm MatchGuard ReturnExpr AwaitExpr BoxExpr
-  
-  ColonType ColonTypeOption Value RefExprMod EffectExprMod PrefixOp BinOp ArrayExprInner ExprList
-  RecExprFieldList Spread SpreadOption ColonExpr ColonExprOption AsyncOption MoveOption ElseBranch
-  ElseBranchInner ElseBranchOption LabelOption RangeOp MatchGuardOption CommaOption 
+
+  ColonType Value RefExprMod EffectExprMod PrefixOp BinOp ArrayExprInner ExprList RecExprFieldList
+  Spread ColonExpr ElseBranch ElseBranchInner RangeOp
 
 context-free syntax
 
@@ -36,9 +40,6 @@ LetStmt.LetStmt =
   "=" initializer:Expr ";"
 
 ColonType.ColonType = ":" Type
-
-ColonTypeOption.None =
-ColonTypeOption.Some = ColonType
 
 ExprStmt.ExprStmt =
   Attr* Expr SemiOption
@@ -137,22 +138,22 @@ Literal.Literal =
   Attr* value:Value
 
 Value.Int =
-  "int_number"
+  INT
 
 Value.Float =
-  "float_number"
+  FLOAT
 
 Value.String =
-  "string"
+  STRING
 
 Value.RawString =
-  "raw_string"
+  RAWSTRING
 
 Value.ByteString =
-  "byte_string"
+  BYTESTRING
 
 Value.RawByteString =
-  "raw_byte_string"
+  RAWBYTESTRING
 
 Value.True =
   "true"
@@ -161,10 +162,10 @@ Value.False =
   "false"
 
 Value.Char =
-  "char"
+  CHAR
 
 Value.Byte =
-  "byte"
+  BYTE
 
 PathExpr.PathExpr =
   Attr* Path
@@ -347,16 +348,10 @@ RecExprFieldList.NoTrailing = {RecordExprField ","}*
 
 Spread.Spread = ".." spread:Expr
 
-SpreadOption.None =
-SpreadOption.Some = Spread
-
 RecordExprField.RecordExprField =
   Attr* NameRef ColonExprOption
 
 ColonExpr.ColonExpr = ":" Expr
-
-ColonExprOption.None =
-ColonExprOption.Some = ColonExpr
 
 CallExpr.CallExpr =
   Attr* Expr ArgList
@@ -374,12 +369,6 @@ ClosureExpr.ClosureExpr =
   Attr* StaticOption AsyncOption MoveOption ParamList RetTypeOption
   body:Expr
 
-AsyncOption.None =
-AsyncOption.Some = "async"
-
-MoveOption.None =
-MoveOption.Some = "move"
-
 IfExpr.IfExpr =
   Attr* "if" Condition then_branch:BlockExpr
   ElseBranchOption
@@ -388,9 +377,6 @@ ElseBranch.ElseBranch = "else" else_branch:ElseBranchInner
 
 ElseBranchInner = IfExpr
 ElseBranchInner = BlockExpr
-
-ElseBranchOption.None =
-ElseBranchOption.Some = ElseBranch
 
 Condition.Condition =
   "let" Pat "=" Expr
@@ -402,9 +388,6 @@ LoopExpr.LoopExpr =
   Attr* LabelOption "loop"
   loop_body:BlockExpr
 
-LabelOption.None =
-LabelOption.Some = Label
-
 ForExpr.ForExpr =
   Attr* LabelOption "for" Pat "in" iterable:Expr
   loop_body:BlockExpr
@@ -414,7 +397,7 @@ WhileExpr.WhileExpr =
   loop_body:BlockExpr
 
 Label.Label =
-  "lifetime"
+  LIFETIME
 
 BreakExpr.BreakExpr =
   Attr* "break" LifetimeOption ExprOption
@@ -439,12 +422,6 @@ MatchArmList.MatchArmList =
 
 MatchArm.MatchArm =
   Attr* Pat guard:MatchGuardOption "=>" Expr CommaOption
-
-MatchGuardOption.None =
-MatchGuardOption.Some = MatchGuard
-
-CommaOption.None =
-CommaOption.Some = ","
 
 MatchGuard.MatchGuard =
   "if" Expr
