@@ -10,78 +10,61 @@ imports
   items-options
 
 context-free sorts
-  Pat LiteralPat IdentPat WildcardPat RangePat RefPat RecordPat RecordPatFieldList
-  RecordPatField TupleStructPat TuplePat ParenPat SlicePat PathPat OrPat BoxPat RestPat
-  MacroPat
+  Pat RecordPatFieldList RecordPatField
 
   AtPat RecPatFieldList Rest NameRefColon PatList
 
 context-free syntax
 
-Pat =
-  IdentPat
-
-Pat =
-  BoxPat
-
-Pat =
-  RestPat
-
-Pat =
-  LiteralPat
-
-Pat =
-  MacroPat
-
-Pat =
-  OrPat
-
-Pat =
-  ParenPat
-
-Pat =
-  PathPat
-
-Pat =
-  WildcardPat
-
-Pat =
-  RangePat
-
-Pat =
-  RecordPat
-
-Pat =
-  RefPat
-
-Pat =
-  SlicePat
-
-Pat =
-  TuplePat
-
-Pat =
-  TupleStructPat
-
-LiteralPat =
-  Literal
-
-IdentPat.IdentPat =
+Pat.IdentPat =
   Attr* RefOption MutOption Name AtPatOption
 
-AtPat.AtPat = "@" Pat
+Pat.BoxPat =
+  "box" Pat
 
-WildcardPat.WildcardPat =
+Pat.RestPat =
+  ".."
+
+Pat =
+  Literal
+
+Pat =
+  MacroCall
+
+Pat.Trailing =
+  Pat "|" {Pat "|"}+ "|"
+
+Pat.NoTrailing =
+  Pat "|" {Pat "|"}+
+
+Pat.ParenPat =
+  "(" Pat ")"
+
+Pat =
+  Path
+
+Pat.WildcardPat =
   "_"
 
-RangePat.RangePat =
+Pat.RangePat =
   start:Pat op:RangeOp end:Pat
 
-RefPat.RefPat =
+Pat.RecordPat =
+  Path RecordPatFieldList
+
+Pat.RefPat =
   "&" MutOption Pat
 
-RecordPat.RecordPat =
-  Path RecordPatFieldList
+Pat.SlicePat =
+  "[" PatList "]"
+
+Pat.TuplePat =
+   "(" fields:PatList ")"
+
+Pat.TupleStructPat =
+   Path "(" fields:PatList ")"
+
+AtPat.AtPat = "@" Pat
 
 RecordPatFieldList.RecordPatFieldList =
   "{"
@@ -98,32 +81,5 @@ RecordPatField.RecordPatField =
 
 NameRefColon.NameRefColon = NameRef ":"
 
-TupleStructPat.TupleStructPat =
-   Path "(" fields:PatList ")"
-
 PatList.Trailing = {Pat ","}+ ","
 PatList.NoTrailing = {Pat ","}*
-
-TuplePat.TuplePat =
-   "(" fields:PatList ")"
-
-ParenPat.ParenPat =
-  "(" Pat ")"
-
-SlicePat.SlicePat =
-  "[" PatList "]"
-
-PathPat =
-  Path
-
-OrPat.Trailing = {Pat "|"}+ "|"
-OrPat.NoTrailing = {Pat "|"}+
-
-BoxPat.BoxPat =
-  "box" Pat
-
-RestPat.RestPat =
-  ".."
-
-MacroPat =
-  MacroCall

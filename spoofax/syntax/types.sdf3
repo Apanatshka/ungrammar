@@ -2,6 +2,7 @@ module types
 
 imports
   tokens
+  keywords
   paths-macros
   items
   stmts-exprs
@@ -11,96 +12,56 @@ imports
   stmts-exprs-options
 
 context-free sorts
-  Type ParenType NeverType PathType TupleType PtrType RefType ArrayType SliceType
-  InferType FnPtrType ForType ImplTraitType DynTraitType TypeBoundList TypeBound
+  Type TypeBoundList TypeBound
 
   TypeList ConstOrMut
 
 context-free syntax
 
-Type =
-  ArrayType
+Type.ArrayType =
+  "[" Type ";" Expr "]"
 
-Type =
-  DynTraitType
+Type.DynTraitType =
+  "dyn" TypeBoundList
 
-Type =
-  FnPtrType
+Type.FnPtrType =
+  ConstOption AsyncOption UnsafeOption AbiOption "fn" ParamList RetTypeOption
 
-Type =
-  ForType
+Type.ForType =
+  "for" GenericParamList Type
 
-Type =
-  ImplTraitType
+Type.ImplTraitType =
+  "impl" TypeBoundList
 
-Type =
-  InferType
+Type.InferType =
+  "_"
 
-Type =
-  NeverType
-
-Type =
-  ParenType
-
-Type =
-  PathType
-
-Type =
-  PtrType
-
-Type =
-  RefType
-
-Type =
-  SliceType
-
-Type =
-  TupleType
-
-ParenType.ParenType =
-  "(" Type ")"
-
-NeverType.NeverType =
+Type.NeverType =
   "!"
 
-PathType =
+Type.ParenType =
+  "(" Type ")"
+
+Type =
   Path
 
-TupleType.TupleType =
+Type.PtrType =
+  "*" ConstOrMut Type
+
+Type.RefType =
+  "&" LifetimeOption MutOption Type
+
+Type.SliceType =
+  "[" Type "]"
+
+Type.TupleType =
   "(" fields:TypeList ")"
 
 TypeList.Trailing = {Type ","}+ ","
 TypeList.NoTrailing = {Type ","}*
 
-PtrType.PtrType =
-  "*" ConstOrMut Type
-
-ConstOrMut.Const = "const"
-ConstOrMut.Mut = "mut"
-
-RefType.RefType =
-  "&" LifetimeOption MutOption Type
-
-ArrayType.ArrayType =
-  "[" Type ";" Expr "]"
-
-SliceType.SliceType =
-  "[" Type "]"
-
-InferType.InferType =
-  "_"
-
-FnPtrType.FnPtrType =
-  ConstOption AsyncOption UnsafeOption AbiOption "fn" ParamList RetTypeOption
-
-ForType.ForType =
-  "for" GenericParamList Type
-
-ImplTraitType.ImplTraitType =
-  "impl" TypeBoundList
-
-DynTraitType.DynTraitType =
-  "dyn" TypeBoundList
+ConstOrMut = KW_CONST
+ConstOrMut = KW_MUT
 
 TypeBoundList.Trailing = {Type "+"}+ "+"
 TypeBoundList.NoTrailing = {Type "+"}+

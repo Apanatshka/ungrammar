@@ -2,6 +2,7 @@ module stmts-exprs
 
 imports
   tokens
+  keywords
   items
   patterns
   types
@@ -12,127 +13,119 @@ imports
   paths-macros-options
 
 context-free sorts
-  Stmt LetStmt ExprStmt Expr Literal PathExpr BlockExpr RefExpr TryExpr EffectExpr
-  PrefixExpr BinExpr CastExpr ParenExpr ArrayExpr IndexExpr TupleExpr RecordExpr
-  RecordExprFieldList RecordExprField CallExpr ArgList MethodCallLExpr FieldExpr
-  ClosureExpr IfExpr Condition LoopExpr ForExpr WhileExpr Label BreakExpr ContinueExpr
-  RangeExpr MatchExpr MatchArmList MatchArm MatchGuard ReturnExpr AwaitExpr BoxExpr
+  Stmt Expr Literal BlockExpr RecordExprFieldList RecordExprField ArgList MethodCallLExpr IfExpr
+  Condition Label MatchArm MatchGuard
 
-  ColonType Value RefExprMod EffectExprMod PrefixOp BinOp ArrayExprInner ExprList RecExprFieldList
+  ColonType Value RefExprMod EffectExprMod ArrayExprInner ExprList RecExprFieldList
   Spread ColonExpr ElseBranch ElseBranchInner RangeOp
 
 context-free syntax
 
-Stmt.Semi =
-  ";"
-
 Stmt =
-  ExprStmt
+  SEMI
+
+Stmt.ExprStmt =
+  Attr* Expr SemiOption
 
 Stmt =
   Item
 
-Stmt =
-  LetStmt
-
-LetStmt.LetStmt =
+Stmt.LetStmt =
   Attr* "let" Pat ColonTypeOption
   "=" initializer:Expr ";"
 
 ColonType.ColonType = ":" Type
 
-ExprStmt.ExprStmt =
-  Attr* Expr SemiOption
+Expr.ArrayExpr =
+  Attr* "[" Attr* ArrayExprInner "]"
 
-Expr =
-  ArrayExpr
-
-Expr =
-  AwaitExpr
-
-Expr =
-  BinExpr
+Expr.AwaitExpr =
+  Attr* Expr "." "await"
 
 Expr =
   BlockExpr
 
-Expr =
-  BoxExpr
+Expr.BoxExpr =
+  Attr* "box" Expr
 
-Expr =
-  BreakExpr
+Expr.BreakExpr =
+  Attr* "break" LifetimeOption ExprOption
 
-Expr =
-  CallExpr
+Expr.CallExpr =
+  Attr* Expr ArgList
 
-Expr =
-  CastExpr
+Expr.CastExpr =
+  Attr* Expr "as" Type
 
-Expr =
-  ClosureExpr
+Expr.ClosureExpr =
+  Attr* StaticOption AsyncOption MoveOption ParamList RetTypeOption
+  body:Expr
 
-Expr =
-  ContinueExpr
+Expr.ContinueExpr =
+  Attr* "continue" LifetimeOption
 
-Expr =
-  EffectExpr
+Expr.EffectExpr =
+  Attr* LabelOption EffectExprMod BlockExpr
 
-Expr =
-  FieldExpr
+Expr.FieldExpr =
+  Attr* Expr "." NameRef
 
-Expr =
-  ForExpr
+Expr.ForExpr =
+  Attr* LabelOption "for" Pat "in" iterable:Expr
+  loop_body:BlockExpr
 
 Expr =
   IfExpr
 
-Expr =
-  IndexExpr
+Expr.IndexExpr =
+  Attr* base:Expr "[" index:Expr "]"
 
 Expr =
   Literal
 
-Expr =
-  LoopExpr
+Expr.LoopExpr =
+  Attr* LabelOption "loop"
+  loop_body:BlockExpr
 
 Expr =
   MacroCall
 
-Expr =
-  MatchExpr
+Expr.MatchExpr =
+  Attr* "match" Expr "{"
+    Attr*
+    arms:MatchArm*
+  "}"
 
-Expr =
-  MethodCallExpr
+Expr.MethodCallExpr =
+  Attr* Expr "." NameRef GenericArgListOption ArgList
 
-Expr =
-  ParenExpr
+Expr.ParenExpr =
+  Attr* "(" Attr* Expr ")"
 
-Expr =
-  PathExpr
+Expr.PathExpr =
+  Attr* Path
 
-Expr =
-  PrefixExpr
+Expr.RangeExpr =
+  Attr* start:ExprOption op:RangeOp end:ExprOption
 
-Expr =
-  RangeExpr
+Expr.RecordExpr =
+  Path RecordExprFieldList
 
-Expr =
-  RecordExpr
+Expr.RefExpr =
+  Attr* "&" RefExprMod Expr
 
-Expr =
-  RefExpr
+Expr.ReturnExpr =
+  Attr* "return" ExprOption
 
-Expr =
-  ReturnExpr
+Expr.TryExpr =
+  Attr* Expr "?"
 
-Expr =
-  TryExpr
+Expr.TupleExpr =
+  Attr* "(" Attr* fields:ExprList ")"
 
-Expr =
-  TupleExpr
-
-Expr =
-  WhileExpr
+Expr.WhileExpr =
+  Attr* LabelOption "while" Condition
+  loop_body:BlockExpr
 
 Literal.Literal =
   Attr* value:Value
@@ -167,18 +160,12 @@ Value.Char =
 Value.Byte =
   BYTE
 
-PathExpr.PathExpr =
-  Attr* Path
-
 BlockExpr.BlockExpr =
   "{"
     Attr*
     statements:Stmt*
     ExprOption
   "}"
-
-RefExpr.RefExpr =
-  Attr* "&" RefExprMod Expr
 
 RefExprMod.Raw =
   "raw"
@@ -189,12 +176,6 @@ RefExprMod.Mut =
 RefExprMod.Const =
   "const"
 
-TryExpr.TryExpr =
-  Attr* Expr "?"
-
-EffectExpr.EffectExpr =
-  Attr* LabelOption EffectExprMod BlockExpr
-
 EffectExprMod.Try =
   "try"
 
@@ -204,119 +185,188 @@ EffectExprMod.Unsafe =
 EffectExprMod.Async =
   "async"
 
-PrefixExpr.PrefixExpr =
-  Attr* op:PrefixOp Expr
+Expr.Neg =
+  Attr* "-" Expr
 
-PrefixOp.Neg =
-  "-"
+Expr.Not =
+  Attr* "!" Expr
 
-PrefixOp.Not =
-  "!"
+Expr.Deref =
+  Attr* "*" Expr
 
-PrefixOp.Deref =
-  "*"
-
-BinExpr.BinExpr =
+Expr.Or =
   Attr*
   lhs:Expr
-  op:BinOp
+  "||"
   rhs:Expr
 
-BinOp.Or =
-  "||"
-
-BinOp.And =
+Expr.And =
+  Attr*
+  lhs:Expr
   "&&"
+  rhs:Expr
 
-BinOp.Eq =
+Expr.Eq =
+  Attr*
+  lhs:Expr
   "=="
+  rhs:Expr
 
-BinOp.Neq =
+Expr.Neq =
+  Attr*
+  lhs:Expr
   "!="
+  rhs:Expr
 
-BinOp.Le =
+Expr.Le =
+  Attr*
+  lhs:Expr
   "<="
+  rhs:Expr
 
-BinOp.Ge =
+Expr.Ge =
+  Attr*
+  lhs:Expr
   ">="
+  rhs:Expr
 
-BinOp.Lt =
+Expr.Lt =
+  Attr*
+  lhs:Expr
   "<"
+  rhs:Expr
 
-BinOp.Gt =
+Expr.Gt =
+  Attr*
+  lhs:Expr
   ">"
+  rhs:Expr
 
-BinOp.Add =
+Expr.Add =
+  Attr*
+  lhs:Expr
   "+"
+  rhs:Expr
 
-BinOp.Mul =
+Expr.Mul =
+  Attr*
+  lhs:Expr
   "*"
+  rhs:Expr
 
-BinOp.Min =
+Expr.Min =
+  Attr*
+  lhs:Expr
   "-"
+  rhs:Expr
 
-BinOp.Div =
+Expr.Div =
+  Attr*
+  lhs:Expr
   "/"
+  rhs:Expr
 
-BinOp.Mod =
+Expr.Mod =
+  Attr*
+  lhs:Expr
   "%"
+  rhs:Expr
 
-BinOp.Shl =
+Expr.Shl =
+  Attr*
+  lhs:Expr
   "<<"
+  rhs:Expr
 
-BinOp.Shr =
+Expr.Shr =
+  Attr*
+  lhs:Expr
   ">>"
+  rhs:Expr
 
-BinOp.Xor =
+Expr.Xor =
+  Attr*
+  lhs:Expr
   "^"
+  rhs:Expr
 
-BinOp.Bor =
+Expr.Bor =
+  Attr*
+  lhs:Expr
   "|"
+  rhs:Expr
 
-BinOp.Band =
+Expr.Band =
+  Attr*
+  lhs:Expr
   "&"
+  rhs:Expr
 
-BinOp.Ass =
+Expr.Ass =
+  Attr*
+  lhs:Expr
   "="
+  rhs:Expr
 
-BinOp.AddAss =
+Expr.AddAss =
+  Attr*
+  lhs:Expr
   "+="
+  rhs:Expr
 
-BinOp.DivAss =
+Expr.DivAss =
+  Attr*
+  lhs:Expr
   "/="
+  rhs:Expr
 
-BinOp.MulAss =
+Expr.MulAss =
+  Attr*
+  lhs:Expr
   "*="
+  rhs:Expr
 
-BinOp.ModAss =
+Expr.ModAss =
+  Attr*
+  lhs:Expr
   "%="
+  rhs:Expr
 
-BinOp.ShlAss =
+Expr.ShlAss =
+  Attr*
+  lhs:Expr
   ">>="
+  rhs:Expr
 
-BinOp.ShrAss =
+Expr.ShrAss =
+  Attr*
+  lhs:Expr
   "<<="
+  rhs:Expr
 
-BinOp.MinAss =
+Expr.MinAss =
+  Attr*
+  lhs:Expr
   "-="
+  rhs:Expr
 
-BinOp.BorAss =
+Expr.BorAss =
+  Attr*
+  lhs:Expr
   "|="
+  rhs:Expr
 
-BinOp.BandAss =
+Expr.BandAss =
+  Attr*
+  lhs:Expr
   "&="
+  rhs:Expr
 
-BinOp.XorAss =
+Expr.XorAss =
+  Attr*
+  lhs:Expr
   "^="
-
-CastExpr.CastExpr =
-  Attr* Expr "as" Type
-
-ParenExpr.ParenExpr =
-  Attr* "(" Attr* Expr ")"
-
-ArrayExpr.ArrayExpr =
-  Attr* "[" Attr* ArrayExprInner "]"
+  rhs:Expr
 
 ArrayExprInner = 
   ExprList
@@ -326,15 +376,6 @@ ArrayExprInner.InitWithLength =
 
 ExprList.Trailing = {Expr ","}+ ","
 ExprList.NoTrailing = {Expr ","}*
-
-IndexExpr.IndexExpr =
-  Attr* base:Expr "[" index:Expr "]"
-
-TupleExpr.TupleExpr =
-  Attr* "(" Attr* fields:ExprList ")"
-
-RecordExpr.RecordExpr =
-  Path RecordExprFieldList
 
 RecordExprFieldList.RecordExprFieldList =
   "{"
@@ -353,21 +394,8 @@ RecordExprField.RecordExprField =
 
 ColonExpr.ColonExpr = ":" Expr
 
-CallExpr.CallExpr =
-  Attr* Expr ArgList
-
 ArgList.ArgList =
   "(" args:ExprList ")"
-
-MethodCallExpr.MethodCallExpr =
-  Attr* Expr "." NameRef GenericArgListOption ArgList
-
-FieldExpr.FieldExpr =
-  Attr* Expr "." NameRef
-
-ClosureExpr.ClosureExpr =
-  Attr* StaticOption AsyncOption MoveOption ParamList RetTypeOption
-  body:Expr
 
 IfExpr.IfExpr =
   Attr* "if" Condition then_branch:BlockExpr
@@ -378,59 +406,21 @@ ElseBranch.ElseBranch = "else" else_branch:ElseBranchInner
 ElseBranchInner = IfExpr
 ElseBranchInner = BlockExpr
 
-Condition.Condition =
+Condition.Let =
   "let" Pat "=" Expr
 
 Condition =
   Expr
 
-LoopExpr.LoopExpr =
-  Attr* LabelOption "loop"
-  loop_body:BlockExpr
-
-ForExpr.ForExpr =
-  Attr* LabelOption "for" Pat "in" iterable:Expr
-  loop_body:BlockExpr
-
-WhileExpr.WhileExpr =
-  Attr* LabelOption "while" Condition
-  loop_body:BlockExpr
-
 Label.Label =
   LIFETIME
-
-BreakExpr.BreakExpr =
-  Attr* "break" LifetimeOption ExprOption
-
-ContinueExpr.ContinueExpr =
-  Attr* "continue" LifetimeOption
-
-RangeExpr.RangeExpr =
-  Attr* start:ExprOption op:RangeOp end:ExprOption
 
 RangeOp.Exclusive = ".."
 RangeOp.Inclusive = "..="
 
-MatchExpr.MatchExpr =
-  Attr* "match" Expr MatchArmList
-
-MatchArmList.MatchArmList =
-  "{"
-    Attr*
-    arms:MatchArm*
-  "}"
 
 MatchArm.MatchArm =
   Attr* Pat guard:MatchGuardOption "=>" Expr CommaOption
 
 MatchGuard.MatchGuard =
   "if" Expr
-
-ReturnExpr.ReturnExpr =
-  Attr* "return" ExprOption
-
-AwaitExpr.AwaitExpr =
-  Attr* Expr "." "await"
-
-BoxExpr.BoxExpr =
-  Attr* "box" Expr
