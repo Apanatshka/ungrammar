@@ -1,23 +1,25 @@
 module stmts-exprs
 
 imports
-  tokens
-  keywords
-  items
-  patterns
-  types
-  paths-macros
 
-  stmts-exprs-options
-  items-options
-  paths-macros-options
+tokens
+keywords
+items
+patterns
+types
+paths-macros
+
+stmts-exprs-options
+items-options
+paths-macros-options
 
 context-free sorts
-  Stmt Expr Literal BlockExpr RecordExprFieldList RecordExprField ArgList MethodCallLExpr IfExpr
-  Condition Label MatchArm MatchGuard
 
-  ColonType Value RefExprMod EffectExprMod ArrayExprInner ExprList RecExprFieldList
-  Spread ColonExpr ElseBranch ElseBranchInner RangeOp
+Stmt Expr Literal BlockExpr RecordExprFieldList RecordExprField ArgList MethodCallLExpr IfExpr
+Condition Label MatchArm MatchGuard
+
+ColonType Value RefExprMod EffectExprMod ArrayExprInner ExprList RecExprFieldList
+Spread ColonExpr ElseBranch ElseBranchInner RangeOp
 
 context-free syntax
 
@@ -107,6 +109,7 @@ Expr.PathExpr =
 
 Expr.RangeExpr =
   Attr* start:ExprOption op:RangeOp end:ExprOption
+  {non-assoc}
 
 Expr.RecordExpr =
   Path RecordExprFieldList
@@ -199,174 +202,203 @@ Expr.Or =
   lhs:Expr
   "||"
   rhs:Expr
+  {left}
 
 Expr.And =
   Attr*
   lhs:Expr
   "&&"
   rhs:Expr
+  {left}
 
 Expr.Eq =
   Attr*
   lhs:Expr
   "=="
   rhs:Expr
+  {non-assoc}
 
 Expr.Neq =
   Attr*
   lhs:Expr
   "!="
   rhs:Expr
+  {non-assoc}
 
 Expr.Le =
   Attr*
   lhs:Expr
   "<="
   rhs:Expr
+  {non-assoc}
 
 Expr.Ge =
   Attr*
   lhs:Expr
   ">="
   rhs:Expr
+  {non-assoc}
 
 Expr.Lt =
   Attr*
   lhs:Expr
   "<"
   rhs:Expr
+  {non-assoc}
 
 Expr.Gt =
   Attr*
   lhs:Expr
   ">"
   rhs:Expr
+  {non-assoc}
 
 Expr.Add =
   Attr*
   lhs:Expr
   "+"
   rhs:Expr
+  {left}
 
 Expr.Mul =
   Attr*
   lhs:Expr
   "*"
   rhs:Expr
+  {left}
 
-Expr.Min =
+Expr.Sub =
   Attr*
   lhs:Expr
   "-"
   rhs:Expr
+  {left}
 
 Expr.Div =
   Attr*
   lhs:Expr
   "/"
   rhs:Expr
+  {left}
 
-Expr.Mod =
+Expr.Rem =
   Attr*
   lhs:Expr
   "%"
   rhs:Expr
+  {left}
 
 Expr.Shl =
   Attr*
   lhs:Expr
   "<<"
   rhs:Expr
+  {left}
 
 Expr.Shr =
   Attr*
   lhs:Expr
   ">>"
   rhs:Expr
+  {left}
 
 Expr.Xor =
   Attr*
   lhs:Expr
   "^"
   rhs:Expr
+  {left}
 
 Expr.Bor =
   Attr*
   lhs:Expr
   "|"
   rhs:Expr
+  {left}
 
 Expr.Band =
   Attr*
   lhs:Expr
   "&"
   rhs:Expr
+  {left}
 
 Expr.Ass =
   Attr*
   lhs:Expr
   "="
   rhs:Expr
+  {left}
 
 Expr.AddAss =
   Attr*
   lhs:Expr
   "+="
   rhs:Expr
+  {left}
 
 Expr.DivAss =
   Attr*
   lhs:Expr
   "/="
   rhs:Expr
+  {left}
 
 Expr.MulAss =
   Attr*
   lhs:Expr
   "*="
   rhs:Expr
+  {left}
 
-Expr.ModAss =
+Expr.RemAss =
   Attr*
   lhs:Expr
   "%="
   rhs:Expr
+  {left}
 
 Expr.ShlAss =
   Attr*
   lhs:Expr
   ">>="
   rhs:Expr
+  {left}
 
 Expr.ShrAss =
   Attr*
   lhs:Expr
   "<<="
   rhs:Expr
+  {left}
 
-Expr.MinAss =
+Expr.SubAss =
   Attr*
   lhs:Expr
   "-="
   rhs:Expr
+  {left}
 
 Expr.BorAss =
   Attr*
   lhs:Expr
   "|="
   rhs:Expr
+  {left}
 
 Expr.BandAss =
   Attr*
   lhs:Expr
   "&="
   rhs:Expr
+  {left}
 
 Expr.XorAss =
   Attr*
   lhs:Expr
   "^="
   rhs:Expr
+  {left}
 
 ArrayExprInner = 
   ExprList
@@ -424,3 +456,26 @@ MatchArm.MatchArm =
 
 MatchGuard.MatchGuard =
   "if" Expr
+
+context-free priorities
+
+Expr.PathExpr >
+Expr.MethodCallExpr >
+Expr.FieldExpr >
+{ Expr.CallExpr Expr.ArrayExpr } >
+Expr.TryExpr >
+{ Expr.Neg Expr.Deref Expr.Not Expr.RefExpr } >
+Expr.CastExpr >
+{ left: Expr.Mul Expr.Div Expr.Rem } >
+{ left: Expr.Add Expr.Sub } >
+{ left: Expr.Shl Expr.Shr } >
+Expr.Band >
+Expr.Xor >
+Expr.Bor >
+{ non-assoc: Expr.Eq Expr.Neq Expr.Lt Expr.Gt Expr.Le Expr.Ge } >
+Expr.And >
+Expr.Or >
+Expr.RangeExpr >
+{ right: Expr.Ass Expr.AddAss Expr.SubAss Expr.MulAss Expr.DivAss Expr.RemAss
+         Expr.BandAss Expr.BorAss Expr.XorAss Expr.ShlAss Expr.ShrAss } >
+{ Expr.ReturnExpr Expr.BreakExpr Expr.ClosureExpr }
